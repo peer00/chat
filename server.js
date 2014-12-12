@@ -11,7 +11,7 @@ server.on("connection", function(obj){
   userid.user.send(JSON.stringify(jsonMsg("server","Choose your username please","msg")));
 
   userDb.forEach(function(userobj) {
-    if (userobj.user !== userid.user) {
+    if (userobj.user !== userid.user && userobj.status === "online") {
       userobj.user.send(JSON.stringify(jsonMsg("server","Client Connected","msg")));
     }
   });
@@ -22,14 +22,12 @@ server.on("connection", function(obj){
       usermsg = JSON.parse(message);
       userid.name = usermsg.msg;
 
-      userid.status = "online" //setting the user "online"
-      userDb.forEach(function(userobj) {
-        userobj.user.send(JSON.stringify(jsonMsg(userid.name,userid.status,"data")));
-      });
+      userid.status = "online" //set the new user "online"
 
-      chatHistoryDb.forEach(function(each) {  // send chat history to user when he logs on
-        userid.user.send(each)
-      });
+      offlineOnline(); //tell everybody who's online and offline
+
+      sendChatHistory(); //send all the chathistory to the user
+
     }
 
     else {
@@ -42,10 +40,12 @@ server.on("connection", function(obj){
 
       else {
         console.log(userDb)
-        userDb.forEach(function(userobj) {
-            msgObj = JSON.parse(message);
-            userobj.user.send(JSON.stringify(jsonMsg(userid.name,msgObj.msg,msgObj.type)));
-        });
+          userDb.forEach(function(userobj) {
+            if (userobj.status === "online") {
+              msgObj = JSON.parse(message);
+              userobj.user.send(JSON.stringify(jsonMsg(userid.name,msgObj.msg,msgObj.type)));
+              }
+            });
       }
 
     }
@@ -58,6 +58,13 @@ server.on("connection", function(obj){
 
 
 ///////////////////////FUNCTIONS//////////////////////////////
+
+var sendChatHistory = function() {
+  chatHistoryDb.forEach(function(each) {  // send chat history to user when he logs on
+    userid.user.send(each)
+  });
+};
+
 var offline = function() {
   userid.status = "offline" //setting the user "offline"
   userDb.forEach(function(userobj) {
@@ -89,7 +96,19 @@ var privateSend = function(pmsg) {
   });
 }
 
+var offlineOnline = function() {
+  userDb.forEach(function(userobj) {
+    if (userobj.status === "online") {
+      userobj.user.send(JSON.stringify(jsonMsg(userid.name,userid.status,"data")));
+      if (userobj !== userid) {
+        userid.user.send(JSON.stringify(jsonMsg(userobj.name,userid.status,"data")));
+      }
+    }
+  });
+};
+
 }); //close of server.on
+
 
 var privateCheck = function (message) {
   var parsed = JSON.parse(message);

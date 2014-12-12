@@ -5,32 +5,55 @@ ws.addEventListener("open", function(evt) {
   //document.write("connected...<br>")
 });
 
+var statusList = [];
+
 ws.addEventListener("message", function(msg) {
-  console.log(msg.data);
-  var ul = document.querySelector("#messages")
-  var li = document.createElement("li")
-  ul.insertBefore(li, ul.firstChild)
+
+
   var msgobj = JSON.parse(msg.data);
-  console.log(msg.data)
-    if (msgobj.type === "data") {
+
+    if (msgobj.type === "data" && msgobj.msg === "online") {
       var ul = document.querySelector("#status")
       var li = document.createElement("li")
-      li.innerHTML = msgobj.name + "= " + msgobj.msg
+      statusList.push(li);
+      li.innerHTML = msgobj.name;
       ul.appendChild(li);
     }
+
+    else if (msgobj.type === "data" && msgobj.msg === "offline") {
+      var listAll = document.querySelectorAll("li");
+      statusList.forEach(function(list) {
+        if (list.innerHTML === msgobj.name) {
+          list.remove();
+        }
+      });
+    }
+
     else {
+      var ul = document.querySelector("#messages")
+      var li = document.createElement("li")
+      ul.insertBefore(li, ul.firstChild)
       li.innerHTML = msgobj.name + ": " + msgobj.msg
     }
 
 });
 
+var input = document.querySelector("#chatbox")
+
 var button = document.querySelector("#submit")
 console.log(button);
 button.addEventListener("click", function() {
-  var input = document.querySelector("#chat")
   var message = JSON.stringify({name: "browser", msg: input.value, type: "msg"})
   ws.send(message);
 });
+
+input.addEventListener("keyup", function(evt){
+  if (evt.keyCode === 13) {
+    var message = JSON.stringify({name: "browser", msg: input.value, type: "msg"})
+    ws.send(message);
+    input.value = "";
+  }
+})
 
 // if (JSON.parse(msg).type = "data") {
 //    // li element set to parse > name + msg

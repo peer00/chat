@@ -2,17 +2,106 @@
 <body>
 <head>
   <style>
-  ul { list-style-type: none; margin: 0; padding: 0; }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  h1 {
+    position: absolute;
+    width: 100%;
+    height: 50px;
+    color: lightgrey;
+    padding: 10px;
+    border: 1px solid black;
+    font: 20px Helvetica;
+    background-color: green;
+
+  }
+
+  #chat_page {
+    position: relative;
+    height: 100%;
+    }
+
+  #chat_msg {
+    background-image: url("bg-page.jpg");
+    position: absolute;
+    font: 14px Helvetica ;
+    color: lightgrey;
+    top: 50px;
+    list-style-type: none;
+    /*height: 100%;*/
+    bottom: 40px;
+    width: 100%;
+    padding: 10px;
+    overflow-y: auto;
+  }
+
+
+  #sendinput {
+    position: absolute;
+    background: #000;
+    padding: 3px;
+    bottom: 0;
+    width: 100%;
+  }
+
+  #submit {
+    position: relative;
+    width: 45px;
+    left: 0px;
+    background: rgb(130, 224, 255);
+    border: solid grey;
+    padding: 8px 5px 8px 5px;
+  }
+
+  #chatbox {
+    position: relative;
+    border: 0;
+    left: 5px;
+    padding: 10px;
+    width: 85%;
+  }
+
+  #status_page {
+    position: fixed;
+    font: 14px Helvetica ;
+    color: green;
+    right: 0;
+    bottom: 40px;
+    width: 30%;
+    height: 35%;
+    background-color: lightgrey;
+    margin: 10px;
+    padding:10px 0px 0px 30px;
+    border: 1px solid blue;
+    margin: 0 auto;
+    }
+
+
   </style>
 </head>
 
+<div id=chat_page>
+<h1>Welcome to the Jungle Chat app</h1>
+
+<div id=sendinput>
 <button id=submit>send</button>
-<input type="text" id=chat></input>
+<input type="text" id=chatbox></input>
+</div>
+
+<div id=chat_msg>
 <ul id=messages></ul>
+  <div id=background></div>
+</div>
 
-<ul id=status></ul>
-
-
+<div id=status_page>
+  <ul id=status></ul>
+</div>
+</div>
 
 <script src="chat_html.js"></script>
 </body>
