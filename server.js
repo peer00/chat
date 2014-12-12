@@ -6,7 +6,7 @@ var userDb = [];
 var chatHistoryDb = [];
 
 server.on("connection", function(obj){
-  var userid = {name: "",status: "", user: obj};
+  var userid = {name: "",status: "", password: "", user: obj};
   userDb.push(userid);
   userid.user.send(JSON.stringify(jsonMsg("server","Choose your username please","msg")));
 
@@ -36,6 +36,18 @@ server.on("connection", function(obj){
 
       if ( privateCheck(message) ) { // check if /p option is used to send private message
         privateSend(message); // send private message to user
+      }
+
+      else if ( wickedMessageCheck(message) )  { // check if /wicked is used
+        wickedMessageSend(); // send "jungle is massive" to everybody
+      }
+
+      else if ( kickCheck(message) )  { // check if /kick is used
+        kickUser(message); // kick user from chat
+      }
+
+      else if ( userCheck(message) )  { // check if /user is used
+        setUser(message); // set new user in object
       }
 
       else {
@@ -94,7 +106,45 @@ var privateSend = function(pmsg) {
       userid.user.send(JSON.stringify(jsonMsg(userid.name,msg,"msg")));
     }
   });
-}
+};
+
+var kickUser = function(msg) {
+  var msgObj = JSON.parse(msg)
+  var msgArray = msgObj.msg.split(" ");
+  var userP = msgArray[1];
+
+  userDb.forEach(function(userobj) {
+    if (userobj.name === userP) {
+      userobj.user.close();
+    }
+  });
+};
+
+var setUser = function(msg) {
+  var msgObj = JSON.parse(msg)
+  var msgArray = msgObj.msg.split(" ");
+  var userP = msgArray[1];
+  var passW = msgArray[2];
+
+  userDb.forEach(function(userobj) {
+    if (userobj.name === userP && userobj.password === "") {
+      userobj.password = passW;
+    }
+    else if (userobj.name === userP && userobj.password !== "") {
+      userid.user.send(JSON.stringify(jsonMsg(userid.name,wmsg,"that is not allowed"))); 
+    }
+  });
+};
+
+var wickedMessageSend = function () {
+  wmsg = "Jungle is MASSIVE!!"
+  userDb.forEach(function(userobj) {
+    if (userobj.status === "online") {
+      userobj.user.send(JSON.stringify(jsonMsg(userid.name,wmsg,"msg")));  //verder invullen (eigen naam)
+    }
+  });
+};
+
 
 var offlineOnline = function() {
   userDb.forEach(function(userobj) {
@@ -109,11 +159,31 @@ var offlineOnline = function() {
 
 }); //close of server.on
 
-
-var privateCheck = function (message) {
-  var parsed = JSON.parse(message);
+var privateCheck = function (msgs) {
+  var parsed = JSON.parse(msgs);
   if (parsed.msg.slice(0,2) === "/p") {
   return true;
+  }
+};
+
+var wickedMessageCheck = function (msgs) {
+  var parsed = JSON.parse(msgs);
+  if (parsed.msg.slice(0,7) === "/wicked") {
+    return true;
+  }
+};
+
+var kickCheck = function (msgs) {
+  var parsed = JSON.parse(msgs);
+  if (parsed.msg.slice(0,5) === "/kick") {
+    return true;
+  }
+};
+
+var userCheck = function (msgs) {
+  var parsed = JSON.parse(msgs);
+  if (parsed.msg.slice(0,5) === "/user") {
+    return true;
   }
 };
 

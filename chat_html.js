@@ -9,8 +9,16 @@ var statusList = [];
 
 ws.addEventListener("message", function(msg) {
 
-
   var msgobj = JSON.parse(msg.data);
+  var msgobjArray = msgobj.msg.split(".");
+
+  var imageCheck = function (array) {
+    for (var i = 0; i < array.length; i++) {
+      if (array[i] === "jpg" || array[i] === "bmp" || array[i] === "gif") {
+        return true;
+      }
+    };
+  };
 
     if (msgobj.type === "data" && msgobj.msg === "online") {
       var ul = document.querySelector("#status")
@@ -29,12 +37,35 @@ ws.addEventListener("message", function(msg) {
       });
     }
 
+    else if ( imageCheck(msgobjArray) )  {
+      var ul = document.querySelector("#messages")
+      var li = document.createElement("li")
+      var img = document.createElement("img");
+      img.src = msgobj.msg
+      img.height = "150";
+    //  li.innerHTML = msgobj.msg
+      ul.insertBefore(li, ul.firstChild)
+      li.appendChild(img)
+    }
+
+    else if (msgobj.msg.slice(0,7) === "http://" || msgobj.msg.slice(0,3) === "www") {
+      var ul = document.querySelector("#messages")
+      var li = document.createElement("li")
+      var a = document.createElement("a");
+      a.href = msgobj.msg
+      a.innerHTML = msgobj.msg
+      ul.insertBefore(li, ul.firstChild)
+      li.appendChild(a)
+    }
+
+
     else {
       var ul = document.querySelector("#messages")
       var li = document.createElement("li")
       ul.insertBefore(li, ul.firstChild)
       li.innerHTML = msgobj.name + ": " + msgobj.msg
     }
+
 
 });
 
@@ -54,6 +85,7 @@ input.addEventListener("keyup", function(evt){
     input.value = "";
   }
 })
+
 
 // if (JSON.parse(msg).type = "data") {
 //    // li element set to parse > name + msg
