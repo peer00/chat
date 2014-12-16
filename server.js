@@ -135,12 +135,14 @@ var userAuth = function(x,y) {
 }
 
 var setUser = function(msg) {
-  var msgObj = JSON.parse(msg)
-  var msgArray = msgObj.msg.split(" ");
-  var userP = msgArray[1].trim();
-  var passW = msgArray[2].trim();
+
 
   if (userExist(userP) === false && userCheck(msg) === true) {
+
+    var msgObj = JSON.parse(msg)
+    var msgArray = msgObj.msg.split(" ");
+    var userP = msgArray[1].trim();
+    var passW = msgArray[2].trim();
 
     userid.name = userP;
     userid.password = passW;
@@ -151,6 +153,11 @@ var setUser = function(msg) {
 
   }
   else if (userLogon(msg) === true && userExist(userP) === true && userAuth(userP,passW) === true) {
+
+    var msgObj = JSON.parse(msg)
+    var msgArray = msgObj.msg.split(" ");
+    var userP = msgArray[1].trim();
+    var passW = msgArray[2].trim();
 
     userid.name = userP;
     userid.password = passW;
