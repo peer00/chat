@@ -9,6 +9,7 @@ server.on("connection", function(obj){
   var userid = {name: "",status: "", password: "", user: obj};
   userDb.push(userid);
   userid.user.send(JSON.stringify(jsonMsg("server","Choose your username please","msg")));
+  userid.status = "online";
 
   userDb.forEach(function(userobj) {
     if (userobj.user !== userid.user && userobj.status === "online") {
@@ -19,16 +20,10 @@ server.on("connection", function(obj){
   userid.user.on("message", function(message) {
 
     if (userid.name === "") {
-      usermsg = JSON.parse(message);
-      userid.name = usermsg.msg;
 
-      userid.status = "online" //set the new user "online"
-
-      offlineOnline(); //tell everybody who's online and offline
-
-      sendChatHistory(); //send all the chathistory to the user
-
-    }
+        userid.user.send(JSON.stringify(jsonMsg("server","set your username with /user \"user\" \"password\" or Log on","msg")));
+        setUser(message);
+      }
 
     else {
 
@@ -51,7 +46,6 @@ server.on("connection", function(obj){
       }
 
       else {
-        console.log(userDb)
           userDb.forEach(function(userobj) {
             if (userobj.status === "online") {
               msgObj = JSON.parse(message);
@@ -69,7 +63,7 @@ server.on("connection", function(obj){
 
 
 
-///////////////////////FUNCTIONS//////////////////////////////
+///////////////////////FUNCTIONS////////////////////////////
 
 var sendChatHistory = function() {
   chatHistoryDb.forEach(function(each) {  // send chat history to user when he logs on
@@ -81,7 +75,7 @@ var offline = function() {
   userid.status = "offline" //setting the user "offline"
   userDb.forEach(function(userobj) {
     if (userobj.status === "online") {
-      userobj.user.send(JSON.stringify(jsonMsg(userid.name,userid.status,"data")));
+      userobj.user.send(JSON.stringify(jsonMsg("server",userid.status,"data")));
     }
   });
 }
@@ -120,20 +114,53 @@ var kickUser = function(msg) {
   });
 };
 
+var userExist = function(x) {
+  for (var i = 0; i < userDb.length; i++) {
+    if (userDb[i].name === x) {
+      return true;
+    }
+  };
+  return false;
+}
+
+var userAuth = function(x,y) {
+  for (var i = 0; i < userDb.length; i++) {
+    if (userDb[i].name === x && userDb[i].password === y) {
+      return true;
+    }
+  };
+  return false;
+}
+
 var setUser = function(msg) {
   var msgObj = JSON.parse(msg)
   var msgArray = msgObj.msg.split(" ");
-  var userP = msgArray[1];
-  var passW = msgArray[2];
+  var userP = msgArray[1].trim();
+  var passW = msgArray[2].trim();
 
-  userDb.forEach(function(userobj) {
-    if (userobj.name === userP && userobj.password === "") {
-      userobj.password = passW;
-    }
-    else if (userobj.name === userP && userobj.password !== "") {
-      userid.user.send(JSON.stringify(jsonMsg(userid.name,wmsg,"that is not allowed"))); 
-    }
-  });
+  if (userExist(userP) === false && userCheck(msg) === true) {
+    userid.name = userP;
+    userid.password = passW;
+    userid.user.send(JSON.stringify(jsonMsg("server","user and password have been set","msg")));
+    userid.status === "online"
+    offlineOnline(); //tell everybody who's online and offline
+    sendChatHistory(); //send all the chathistory to the user
+
+  }
+  else if (userLogon(msg) === true && userExist(userP) === true && userAuth(userP,passW) === true) {
+    userid.name = userP;
+    userid.password = passW;
+    userid.user.send(JSON.stringify(jsonMsg("server","Welcome back!","msg")));
+    userid.status === "online"
+    offlineOnline(); //tell everybody who's online and offline
+    sendChatHistory(); //send all the chathistory to the user
+  }
+
+  else {
+    userid.user.send(JSON.stringify(jsonMsg("server","that is not allowed","msg")));
+  }
+
+
 };
 
 var wickedMessageSend = function () {
@@ -147,15 +174,17 @@ var wickedMessageSend = function () {
 
 
 var offlineOnline = function() {
+
   userDb.forEach(function(userobj) {
     if (userobj.status === "online") {
       userobj.user.send(JSON.stringify(jsonMsg(userid.name,userid.status,"data")));
-      if (userobj !== userid) {
-        userid.user.send(JSON.stringify(jsonMsg(userobj.name,userid.status,"data")));
+      if (userobj.user !== userid.user && userid.status === "online") {
+      userid.user.send(JSON.stringify(jsonMsg(userobj.name,userobj.status,"data")));
       }
     }
   });
 };
+
 
 }); //close of server.on
 
@@ -185,9 +214,22 @@ var userCheck = function (msgs) {
   if (parsed.msg.slice(0,5) === "/user") {
     return true;
   }
+  else {
+    return false;
+  }
+};
+
+var userLogon = function (msgs) {
+  var parsed = JSON.parse(msgs);
+  if (parsed.msg.slice(0,6) === "/logon") {
+    return true;
+  }
+  else {
+    return false;
+  }
 };
 
 var jsonMsg = function(nm,ms,tp) {
   var obj = {name: nm, msg: ms, type: tp}
   return obj;
-}
+};
