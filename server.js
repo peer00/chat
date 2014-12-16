@@ -73,9 +73,11 @@ var sendChatHistory = function() {
 
 var offline = function() {
   userid.status = "offline" //setting the user "offline"
+  console.log(userDb);
   userDb.forEach(function(userobj) {
     if (userobj.status === "online") {
       userobj.user.send(JSON.stringify(jsonMsg("server",userid.status,"data")));
+      userobj.user.send(JSON.stringify(jsonMsg("server",userid.name + " went offline","msg")));
     }
   });
 }
@@ -139,6 +141,7 @@ var setUser = function(msg) {
   var passW = msgArray[2].trim();
 
   if (userExist(userP) === false && userCheck(msg) === true) {
+
     userid.name = userP;
     userid.password = passW;
     userid.user.send(JSON.stringify(jsonMsg("server","user and password have been set","msg")));
@@ -148,6 +151,7 @@ var setUser = function(msg) {
 
   }
   else if (userLogon(msg) === true && userExist(userP) === true && userAuth(userP,passW) === true) {
+
     userid.name = userP;
     userid.password = passW;
     userid.user.send(JSON.stringify(jsonMsg("server","Welcome back!","msg")));
